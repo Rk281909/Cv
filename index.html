@@ -1,0 +1,345 @@
+import React, { useState } from 'react';
+import { Shield, Target, Zap, Globe, Menu, X, ChevronRight, Crosshair, MapPin, User, Briefcase, Cpu } from 'lucide-react';
+
+const VAL_RED = "bg-[#ff4655]";
+const VAL_DARK = "bg-[#0f1923]";
+const VAL_TEXT = "font-['Teko']"; // Using Teko as a close alternative to Valorant font
+
+// Data mapped from CV
+const DATA = {
+  agent: {
+    name: "RAKESH",
+    role: "SENTINEL",
+    tagline: "BANKING & FINANCE SPECIALIST",
+    origin: "KAPILVASTU, NEPAL",
+    description: "Dedicated professional with a spirit of not being bogged down by any amount of work. Goal-oriented and armed with extraordinary patience.",
+    abilities: [
+      { key: "C", name: "Communication", desc: "Amazing and convincing communication skills.", icon: Globe },
+      { key: "Q", name: "Management", desc: "Good time management capability.", icon: Shield },
+      { key: "E", name: "Tally ERP", desc: "Accounting proficiency in Tally 9.0.", icon: Zap },
+      { key: "X", name: "Adaptability", desc: "Unique nature to settle in any atmosphere.", icon: Target },
+    ]
+  },
+  career: [
+    {
+      map: "MICROFINANCE",
+      result: "ONGOING",
+      score: "2020 - PRES",
+      kda: "Assistant",
+      agent: "Suryodaya Womi",
+      detail: "Permanent Staff at Maharajgunj Branch. Handling financial operations."
+    },
+    {
+      map: "BANKING",
+      result: "VICTORY",
+      score: "1YR 3MO",
+      kda: "CSD Asst",
+      agent: "NIC ASIA BANK",
+      detail: "Customer Service Department at Labani Branch. Managed client relations."
+    }
+  ],
+  arsenal: [ // Tech Skills
+    { name: "MS Excel", type: "Sidearm", damage: 90 },
+    { name: "MS Word", type: "Rifle", damage: 85 },
+    { name: "PowerPoint", type: "Utility", damage: 80 },
+    { name: "Windows OS", type: "Heavy", damage: 95 },
+    { name: "CAED", type: "Special", damage: 70 },
+  ],
+  identity: { // Personal Info
+    "Father": "Tufani Kurmi",
+    "Mother": "Kislawati Kurmin",
+    "DOB": "29-10-1992",
+    "Languages": "English, Nepali, Bhojpuri, Hindi, Awadhi",
+    "Hobbies": "Soccer, Cricket, PC Games, Billiards"
+  }
+};
+
+const GlitchText = ({ text, className = "" }) => (
+  <span className={`relative inline-block group ${className}`}>
+    <span className="relative z-10">{text}</span>
+    <span className="absolute top-0 left-0 -ml-0.5 translate-x-[2px] text-red-500 opacity-0 group-hover:opacity-70 animate-pulse">{text}</span>
+    <span className="absolute top-0 left-0 -ml-0.5 -translate-x-[2px] text-cyan-500 opacity-0 group-hover:opacity-70 animate-pulse delay-75">{text}</span>
+  </span>
+);
+
+const NavButton = ({ label, active, onClick }) => (
+  <button 
+    onClick={onClick}
+    className={`px-6 py-2 uppercase tracking-widest font-bold text-lg transition-all relative overflow-hidden group ${active ? 'text-[#ff4655]' : 'text-white hover:text-gray-300'}`}
+  >
+    <span className="relative z-10">{label}</span>
+    {active && <div className="absolute bottom-0 left-0 w-full h-1 bg-[#ff4655]" />}
+  </button>
+);
+
+const AbilityIcon = ({ ability }) => (
+  <div className="group relative flex flex-col items-center cursor-pointer">
+    <div className="w-16 h-16 border-2 border-white/20 bg-black/40 flex items-center justify-center mb-2 group-hover:bg-[#ff4655] group-hover:border-[#ff4655] transition-all duration-200 clip-box">
+      <ability.icon size={32} className="text-white" />
+    </div>
+    <span className="font-bold text-white/50 text-xl absolute -bottom-6">{ability.key}</span>
+    
+    {/* Tooltip */}
+    <div className="absolute bottom-20 opacity-0 group-hover:opacity-100 transition-opacity bg-[#0f1923]/95 border border-white/20 p-4 w-64 pointer-events-none z-20">
+      <h4 className="text-[#ff4655] font-bold uppercase text-lg mb-1">{ability.name}</h4>
+      <p className="text-gray-300 text-sm leading-tight">{ability.desc}</p>
+    </div>
+  </div>
+);
+
+const MatchCard = ({ match }) => (
+  <div className="w-full bg-[#1c252e] border-l-4 border-l-[#ff4655] p-4 mb-4 hover:bg-[#26313b] transition-colors group cursor-pointer relative overflow-hidden">
+    <div className="flex justify-between items-center relative z-10">
+      <div className="flex items-center gap-6">
+        <div className="w-16 h-16 bg-white/10 flex items-center justify-center font-bold text-2xl text-white/30 group-hover:text-white group-hover:bg-[#ff4655] transition-all">
+          {match.result === 'VICTORY' ? 'W' : 'IP'}
+        </div>
+        <div>
+          <h3 className="text-2xl font-bold text-white uppercase tracking-wide">{match.map}</h3>
+          <p className="text-gray-400 text-sm uppercase">{match.score} • {match.result}</p>
+        </div>
+      </div>
+      <div className="text-right">
+        <p className="text-[#ff4655] font-bold text-xl">{match.kda}</p>
+        <p className="text-white font-bold">{match.agent}</p>
+      </div>
+    </div>
+    <div className="mt-4 pt-4 border-t border-white/10 text-gray-300 text-sm">
+      {match.detail}
+    </div>
+    <div className="absolute right-0 top-0 opacity-10 text-9xl font-bold text-white pointer-events-none translate-x-10 -translate-y-4">
+      {match.result === 'VICTORY' ? 'WIN' : 'PLAY'}
+    </div>
+  </div>
+);
+
+const StatBar = ({ label, value }) => (
+  <div className="mb-4">
+    <div className="flex justify-between text-white uppercase font-bold tracking-wider mb-1 text-sm">
+      <span>{label}</span>
+      <span className="text-[#ff4655]">{value}</span>
+    </div>
+    <div className="h-2 bg-gray-700 w-full skew-x-[-20deg]">
+      <div 
+        className="h-full bg-white transition-all duration-1000" 
+        style={{ width: `${value}%` }}
+      ></div>
+    </div>
+  </div>
+);
+
+export default function ValorantPortfolio() {
+  const [view, setView] = useState('agent'); // agent, career, arsenal, identity
+
+  return (
+    <div className="min-h-screen bg-[#0f1923] text-white font-sans selection:bg-[#ff4655] selection:text-white overflow-hidden flex flex-col">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&display=swap');
+        .font-val { font-family: 'Teko', sans-serif; }
+        .clip-path-angle { clip-path: polygon(100% 0, 100% 85%, 95% 100%, 0 100%, 0 0); }
+        .clip-box { clip-path: polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%); }
+      `}</style>
+
+      {/* Top Navigation Bar */}
+      <div className="h-20 border-b border-white/10 flex items-center justify-between px-8 bg-[#111] z-50">
+        <div className="flex items-center gap-4">
+          <div className="bg-[#ff4655] p-2">
+            <Shield size={24} className="text-white" />
+          </div>
+          <h1 className="text-3xl font-bold tracking-widest font-val uppercase">VALORANT <span className="text-[#ff4655]">//</span> RAKESH</h1>
+        </div>
+        
+        <div className="hidden md:flex gap-8 font-val">
+          <NavButton label="Agent" active={view === 'agent'} onClick={() => setView('agent')} />
+          <NavButton label="Career" active={view === 'career'} onClick={() => setView('career')} />
+          <NavButton label="Arsenal" active={view === 'arsenal'} onClick={() => setView('arsenal')} />
+          <NavButton label="Identity" active={view === 'identity'} onClick={() => setView('identity')} />
+        </div>
+
+        <div className="flex items-center gap-4 text-gray-400">
+          <div className="w-8 h-8 rounded-full border border-green-400 bg-green-500/20 flex items-center justify-center animate-pulse">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+          </div>
+          <span className="font-val text-xl font-bold tracking-wide text-white">READY</span>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 relative overflow-y-auto">
+        {/* Background Grid */}
+        <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
+        
+        {/* Views */}
+        <div className="max-w-7xl mx-auto p-6 md:p-12 h-full">
+          
+          {view === 'agent' && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center h-full animate-in slide-in-from-left duration-500">
+              {/* Left: Stats & Abilities */}
+              <div className="space-y-8 order-2 lg:order-1">
+                <div>
+                  <h2 className="text-6xl md:text-8xl font-val font-bold uppercase leading-none tracking-tight mb-2">
+                    <GlitchText text={DATA.agent.name} />
+                  </h2>
+                  <div className="flex items-center gap-4 mb-6">
+                     <span className="bg-white/10 px-3 py-1 text-sm font-bold uppercase tracking-widest border border-white/20">{DATA.agent.role}</span>
+                     <span className="flex items-center gap-1 text-[#ff4655] font-bold uppercase text-sm"><MapPin size={14}/> {DATA.agent.origin}</span>
+                  </div>
+                  <p className="text-gray-300 max-w-md border-l-2 border-[#ff4655] pl-4 leading-relaxed">
+                    {DATA.agent.description}
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="text-2xl font-val uppercase font-bold text-white mb-6 tracking-wide">Special Abilities</h3>
+                  <div className="flex gap-6">
+                    {DATA.agent.abilities.map((ability) => (
+                      <AbilityIcon key={ability.key} ability={ability} />
+                    ))}
+                  </div>
+                </div>
+
+                <button 
+                   onClick={() => setView('career')}
+                   className="mt-8 bg-[#ff4655] text-white font-bold py-4 px-12 clip-path-angle hover:bg-[#d93b48] transition-colors uppercase tracking-widest text-xl flex items-center gap-2 group"
+                >
+                  View Match History <ChevronRight className="group-hover:translate-x-1 transition-transform"/>
+                </button>
+              </div>
+
+              {/* Right: Character Art (Placeholder) */}
+              <div className="relative order-1 lg:order-2 flex justify-center">
+                 <div className="absolute inset-0 bg-gradient-to-t from-[#0f1923] to-transparent z-10"></div>
+                 <div className="absolute -inset-4 border border-white/5 z-0 transform rotate-3"></div>
+                 <img 
+                   src="https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1974&auto=format&fit=crop" 
+                   alt="Agent Rakesh" 
+                   className="h-[500px] w-auto object-cover grayscale contrast-125 mask-image-gradient z-0 relative drop-shadow-[0_0_15px_rgba(255,70,85,0.5)]"
+                   style={{ maskImage: 'linear-gradient(to bottom, black 80%, transparent 100%)' }}
+                 />
+                 {/* Decorative Overlay UI */}
+                 <div className="absolute top-10 right-10 z-20 hidden md:block">
+                   <div className="flex flex-col items-end gap-2 text-xs font-mono text-white/50">
+                     <span>SYS.OP.24</span>
+                     <span>TARGET_LOCKED</span>
+                     <Crosshair className="text-[#ff4655] animate-spin-slow" />
+                   </div>
+                 </div>
+              </div>
+            </div>
+          )}
+
+          {view === 'career' && (
+             <div className="max-w-4xl mx-auto animate-in slide-in-from-bottom duration-500">
+               <h2 className="text-5xl font-val font-bold uppercase mb-8 border-b border-white/20 pb-4 flex justify-between items-end">
+                 <span>Career History</span>
+                 <span className="text-xl text-[#ff4655]">RANK: RADIANT</span>
+               </h2>
+               <div className="space-y-4">
+                 {DATA.career.map((match, idx) => (
+                   <MatchCard key={idx} match={match} />
+                 ))}
+               </div>
+             </div>
+          )}
+
+          {view === 'arsenal' && (
+            <div className="max-w-5xl mx-auto animate-in zoom-in duration-300">
+               <h2 className="text-5xl font-val font-bold uppercase mb-12 text-center">Tech Arsenal</h2>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                 {DATA.arsenal.map((item, idx) => (
+                   <div key={idx} className="bg-white/5 p-6 border border-white/10 hover:border-[#ff4655] transition-colors group relative">
+                     <div className="flex justify-between items-start mb-4">
+                       <h3 className="text-3xl font-val font-bold uppercase">{item.name}</h3>
+                       <span className="text-xs font-mono text-gray-500 border border-gray-600 px-2 py-0.5">{item.type}</span>
+                     </div>
+                     <StatBar label="Proficiency" value={item.damage} />
+                     <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#ff4655] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                   </div>
+                 ))}
+               </div>
+               
+               <div className="mt-16 grid grid-cols-3 gap-4 text-center border-t border-white/10 pt-8">
+                  <div>
+                    <div className="text-4xl font-val font-bold text-white">100%</div>
+                    <div className="text-gray-500 uppercase text-sm">Headshot %</div>
+                  </div>
+                  <div>
+                    <div className="text-4xl font-val font-bold text-white">1.0</div>
+                    <div className="text-gray-500 uppercase text-sm">Win Rate</div>
+                  </div>
+                  <div>
+                    <div className="text-4xl font-val font-bold text-white">5+</div>
+                    <div className="text-gray-500 uppercase text-sm">Years Exp</div>
+                  </div>
+               </div>
+            </div>
+          )}
+
+          {view === 'identity' && (
+            <div className="max-w-4xl mx-auto animate-in fade-in duration-700">
+               <div className="bg-[#1c252e] border border-white/10 p-8 relative">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#ff4655] to-transparent"></div>
+                  
+                  <div className="flex flex-col md:flex-row gap-8">
+                    <div className="w-full md:w-1/3">
+                      <div className="aspect-[3/4] bg-black relative border border-white/20">
+                         <img 
+                           src="https://api.dicebear.com/7.x/avataaars/svg?seed=Rakesh&gender=male&clothing=graphicShirt&top=shortHair&hairColor=black&skinColor=brown" 
+                           alt="ID Photo" 
+                           className="w-full h-full object-cover opacity-80"
+                         />
+                         <div className="absolute bottom-4 left-0 w-full text-center bg-[#ff4655] text-white font-val font-bold text-xl py-1 transform -rotate-2 scale-110">
+                           AGENT ID
+                         </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex-1 space-y-6">
+                      <h2 className="text-4xl font-val font-bold text-white uppercase mb-4">Personnel File</h2>
+                      
+                      <div className="grid grid-cols-2 gap-6">
+                        {Object.entries(DATA.identity).map(([key, value]) => (
+                          <div key={key}>
+                            <p className="text-[#ff4655] text-xs font-bold uppercase tracking-widest mb-1">{key}</p>
+                            <p className="text-white text-lg font-medium font-sans border-b border-white/10 pb-1">{value}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="mt-8 pt-8 border-t border-white/10">
+                        <p className="text-[#ff4655] text-xs font-bold uppercase tracking-widest mb-2">Declaration</p>
+                        <p className="text-gray-400 text-sm italic">
+                          "I hereby declare that the above-mentioned information is correct up to my knowledge and I bear the responsibility for the correctness of the above-mentioned particulars."
+                        </p>
+                      </div>
+                      
+                      <div className="mt-4 flex gap-4">
+                        <button className="bg-white text-black font-bold uppercase px-6 py-2 hover:bg-gray-200 clip-path-angle text-sm tracking-widest">
+                          Download CV
+                        </button>
+                        <button className="border border-white/30 text-white font-bold uppercase px-6 py-2 hover:bg-white/10 text-sm tracking-widest">
+                          Contact
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+               </div>
+            </div>
+          )}
+
+        </div>
+      </div>
+      
+      {/* Mobile Nav Drawer (Basic implementation for responsiveness) */}
+      <div className="md:hidden fixed bottom-0 left-0 w-full bg-[#1c252e] border-t border-white/10 p-4 flex justify-between z-50">
+          <Menu className="text-white" onClick={() => setView('agent')} />
+          <User className={view === 'identity' ? 'text-[#ff4655]' : 'text-gray-400'} onClick={() => setView('identity')} />
+          <Briefcase className={view === 'career' ? 'text-[#ff4655]' : 'text-gray-400'} onClick={() => setView('career')} />
+          <Cpu className={view === 'arsenal' ? 'text-[#ff4655]' : 'text-gray-400'} onClick={() => setView('arsenal')} />
+      </div>
+
+    </div>
+  );
+}
+
+
